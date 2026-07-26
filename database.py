@@ -47,7 +47,7 @@ class DB:
             print("SQLite error(err code:3): Table was not created")
             exit(3)
 
-        print("the table was loaded successfully")
+        print("The table was loaded successfully")
 
 #delete(after reading) from here
         self.tracking_number = "0000000569" # Валидация(според мен): len() <= 10 && без символи
@@ -77,44 +77,51 @@ class DB:
     # 4. Commit
     def commit(self):
         while True:
-            answer = input("Are you sure you want to save changes?: Y/N")
+            print("Are you sure you want to save changes?: Y/N")
+            answer = input()
             if answer.lower().strip() == 'y':
                 try:
                     self.conn.commit()
                 except sqlite3.Error:
                     print("SQLite error(err code:4): The database wasn't saved correctly")
                     exit(4)
-                break
+                return True
 
             elif answer.lower().strip() == 'n':
                 self.conn.rollback()
-                break
+                return False
 
             else:
                 print("Invalid input")
 
-    # 5. Стздаване на нова пратка
-    def crate_package(self, tracking_number, sender_name, recipient_name, origin_city, destination_city, weight):
+    # 5. Създаване на нова пратка
+    def create_package(self, shipment):
         try:
             self.cursor.execute(
             """
-            INSERT INTO shipments(Tracking_number, sender_name, recipient_name, origin_city, destination_city,current_status, status_history, weight)
-            VALUES(?,?,?,?,?,?,?,?);
+            INSERT INTO shipments(tracking_number, sender_name, recipient_name, origin_city, destination_city, weight, current_status, status_history, created_at)
+            VALUES(?,?,?,?,?,?,?,?, ?);
             """,
-                (tracking_number,
-                 sender_name,
-                 recipient_name,
-                 origin_city,
-                 destination_city,
-                 datetime.now().strftime("%d/%m/%Y %H:%M:%S") + " - " + 'Registered',
-                 datetime.now().strftime("%d/%m/%Y %H:%M:%S") + " - " + 'Registered',
-                 weight)
+                (
+                 shipment.tracking_number,
+                 shipment.sender_name,
+                 shipment.recipient_name,
+                 shipment.origin_city,
+                 shipment.destination_city,
+                 shipment.weight,
+                 shipment.current_status,
+                 shipment.status_history,
+                 shipment.created_at
+                 )
             )
         except sqlite3.OperationalError:
             print("SQLite error(err code:5): Insert function wasn't able to be implemented correctly")
-            return
+            return False
+        except sqlite3.IntegrityError:
+            print("SQLite error(err code:5): The tracking number already exists")
+            return False
 
-        self.commit()
+        return self.commit()
 
 
 
@@ -245,15 +252,3 @@ class DB:
             exit(14)
 
         print("the connection was closed successfully")
-
-
-
-db_instance = DB()
-#db_instance.crate_package("0000000269", "АААА", "BBBB", "CCCC", "DDDD", 1)
-db_instance.print_all()
-print()
-db_instance.update_state("0000000269", "On the way")
-print()
-db_instance.print_status_history("0000000269")
-#db_instance.delete_package("0000000269")
-db_instance.close_database()
