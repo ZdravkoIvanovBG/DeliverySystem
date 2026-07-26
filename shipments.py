@@ -115,3 +115,13 @@ def show_all_deliveries(db):
 
     for tracking_number, origin_city, destination_city, weight, current_status in all_shipments:
         print(f"{tracking_number} | {origin_city} -> {destination_city} | {weight}kg | {current_status}")
+
+def search_by_tracking_number(db, tracking_number):
+
+    search_by_tracking_number = db.print_by_tracking_num(tracking_number)
+
+    if not search_by_tracking_number:
+        print("Такава пратка не съществува")
+        return
+    print(search_by_tracking_number)
+
