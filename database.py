@@ -49,31 +49,6 @@ class DB:
 
         print("The table was loaded successfully")
 
-#delete(after reading) from here
-        self.tracking_number = "0000000569" # Валидация(според мен): len() <= 10 && без символи
-        self.sender_name = "AAAA" #Валидация: len() < 0 && без цифри && без символи
-        self.recipient_name = "BBBB" #Валидация: len() < 0 && без цифри && без символи
-        self.origin_city = "CCCC" #Валидация: len() < 0 && без цифри && без символи
-        self.destination_city = "DDDD" #Валидация: len() < 0 && без цифри && без символи
-        self.weight = 20.94 #Валидация: weight > 0 && без символи
-        self.current_status = "In transit" #Валидация: len() < 0 && без цифри && без символи
-        self.status_history = "shipped" #Валидация: len() < 0 && без цифри && без символи
-        # според мен трябва потребителя да избира от няколко статуса освен всеи път да си пише свой собствен
-        """
-        Registered: The shipper made a label, but the carrier does not have the package yet.
-        Picked Up / Accepted: The delivery person has the package and starts the trip.
-        In Transit: The package is moving between sorting hubs.
-        Arrived at Hub: The package reached a local or regional sorting center.
-        Customs Clearance: The package is being checked at a country border.
-        Out for Delivery: The package is on the local delivery truck and will arrive today.
-        Delivery Attempted: The driver tried to drop off the package, but no one was there or it was unsafe.
-        Delivered: The package reached its final destination.
-        Issues/Delayed: The package is behind schedule due to weather or traffic.
-        Exception: An unexpected problem, like a damaged box or bad address, stopped the trip.
-        """
-        self.created_at = "11/02/2026"
-# del to here
-
     # 4. Commit
     def commit(self):
         while True:
@@ -239,3 +214,19 @@ class DB:
             exit(14)
 
         print("the connection was closed successfully")
+
+    # 15. Връщане на всички недоставени пратки
+    def get_undelivered_tracking_numbers(self):
+        try:
+            self.cursor.execute(
+                f"""
+                SELECT tracking_number FROM shipments WHERE current_status != ?;       
+                """,
+                    ("Доставена",)
+            )
+            rows = self.cursor.fetchall()
+
+            return list(map(lambda row: row[0], rows))
+        except sqlite3.Error:
+            print("SQLite error(err code:15): Problem with SELECT function")
+            return []
