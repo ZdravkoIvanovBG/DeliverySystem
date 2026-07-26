@@ -29,7 +29,7 @@ class Shipment:
 
     @tracking_number.setter
     def tracking_number(self, value):
-        if value.strip() == "" or not value.isalpha():
+        if value.strip() == "":
             raise ValueError("Tracking number cannot be empty")
         self.__tracking_number = value
 
@@ -39,7 +39,7 @@ class Shipment:
 
     @sender_name.setter
     def sender_name(self, value):
-        if value.strip() == "" or not value.isalpha():
+        if value.strip() == "":
             raise ValueError("Sender name cannot be empty")
         self.__sender_name = value
 
@@ -49,7 +49,7 @@ class Shipment:
 
     @recipient_name.setter
     def recipient_name(self, value):
-        if value.strip() == "" or not value.isalpha():
+        if value.strip() == "":
             raise ValueError("Recipient name cannot be empty")
         self.__recipient_name = value
 
@@ -59,7 +59,7 @@ class Shipment:
 
     @origin_city.setter
     def origin_city(self, value):
-        if value.strip() == "" or not value.isalpha():
+        if value.strip() == "":
             raise ValueError("Origin city cannot be empty")
         self.__origin_city = value
 
@@ -69,7 +69,7 @@ class Shipment:
 
     @destination_city.setter
     def destination_city(self, value):
-        if value.strip() == "" or not value.isalpha():
+        if value.strip() == "":
             raise ValueError("Destination city cannot be empty")
         self.__destination_city = value
 
@@ -118,10 +118,10 @@ def show_all_deliveries(db):
 
 def search_by_tracking_number(db, tracking_number):
 
-    search_by_tracking_number = db.print_by_tracking_num(tracking_number)
+    shipment = db.print_by_tracking_num(tracking_number)
 
     if not search_by_tracking_number:
         print("Такава пратка не съществува")
         return
-    print(search_by_tracking_number)
 
+    print(shipment)
