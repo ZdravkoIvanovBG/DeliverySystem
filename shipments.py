@@ -125,3 +125,21 @@ def search_by_tracking_number(db, tracking_number):
         return
 
     print(shipment)
+
+def change_status(db, tracking_number, new_status):
+
+    db.update_state(tracking_number, new_status)
+
+def show_history(db, tracking_number):
+
+    shipment = db.print_status_history(tracking_number)
+
+    if not shipment:
+        print("Няма пратка с този номер")
+    print(shipment)
+
+def delete_package(db, tracking_number):
+
+    db.delete_package(tracking_number)
+
+

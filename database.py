@@ -158,7 +158,7 @@ class DB:
                 (tracking_number,)
             )
             shipments = self.cursor.fetchone()[0]
-            print(shipments)
+            return shipments
         except sqlite3.Error:
             print("SQLite error(err code:8): Problem with SELECT function or the printing of the table")
 
