@@ -116,9 +116,14 @@ class DB:
                 "SELECT * FROM shipments WHERE tracking_number= ?;",
                 (tracking_number,)
             )
-            shipment = self.cursor.fetchall()[0]
 
-            return shipment
+            shipments_row = self.cursor.fetchone()
+
+            if shipments_row is None:
+                print("No shipments found with the given tracking number.")
+                return None
+
+            return shipments_row[0]
 
         except sqlite3.Error:
             print("SQLite error(err code:7): Problem with SELECT function or the printing of the table")
@@ -132,8 +137,14 @@ class DB:
             """,
                 (tracking_number,)
             )
-            shipments = self.cursor.fetchone()[0]
-            return shipments
+
+            shipments_row = self.cursor.fetchone()
+
+            if shipments_row is None:
+                print("No shipments found with the given tracking number.")
+                return None
+
+            return shipments_row[0]
         except sqlite3.Error:
             print("SQLite error(err code:8): Problem with SELECT function or the printing of the table")
 
@@ -198,9 +209,12 @@ class DB:
                 """,
                     (tracking_number,)
             )
+            if self.cursor.rowcount == 0:
+                print("No shipments found with the given tracking number.")
+                return False
         except sqlite3.Error:
             print("SQLite error(err code:13): Problem with DELETE function")
-            return
+            return False
 
         print(f"You are currently deleting package - {tracking_number}!!!")
         self.commit()
