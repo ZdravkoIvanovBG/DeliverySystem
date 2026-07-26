@@ -85,4 +85,5 @@ def main():
         case _:
             print("Invalid choice. Please try again.")
 
-
+if "__main__" == __name__:
+    main()
