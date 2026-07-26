@@ -131,8 +131,8 @@ class DB:
             self.cursor.execute("SELECT * FROM shipments;")
             shipments = self.cursor.fetchall()
 
-            for packages in shipments:
-                print(packages)
+            return shipments
+
          except sqlite3.Error:
             print("SQLite error(err code:6): Problem with SELECT function or the printing of the table")
 
@@ -145,8 +145,8 @@ class DB:
             )
             shipments = self.cursor.fetchall()
 
-            for packages in shipments:
-                print(packages)
+            return shipments
+
         except sqlite3.Error:
             print("SQLite error(err code:7): Problem with SELECT function or the printing of the table")
 
