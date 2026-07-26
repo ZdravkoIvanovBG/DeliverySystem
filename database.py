@@ -123,8 +123,6 @@ class DB:
 
         return self.commit()
 
-
-
     # 6. SHOW All
     def print_all(self):
          try:
@@ -143,9 +141,9 @@ class DB:
                 "SELECT * FROM shipments WHERE tracking_number= ?;",
                 (tracking_number,)
             )
-            shipments = self.cursor.fetchall()
+            shipment = self.cursor.fetchall()[0]
 
-            return shipments
+            return shipment
 
         except sqlite3.Error:
             print("SQLite error(err code:7): Problem with SELECT function or the printing of the table")
@@ -165,22 +163,8 @@ class DB:
             print("SQLite error(err code:8): Problem with SELECT function or the printing of the table")
 
     # 9-12. Update status
-    def update_state(self, tracking_number, value):
-        # 9. Взимане на current_status
-        try:
-            self.cursor.execute(
-            """
-                SELECT current_status FROM shipments WHERE tracking_number = ?;
-            """,
-                (tracking_number,)
-            )
-
-            current_status = self.cursor.fetchone()[0]
-        except sqlite3.Error:
-            print("SQLite error(err code:9): Problem with SELECT function or the printing of the table")
-            return
-
-        #10. Взимане на history_status
+    def update_state(self, tracking_number, new_status):
+        #10. Взимане на status_history
         try:
             self.cursor.execute(
             """
@@ -193,6 +177,9 @@ class DB:
             print("SQLite error(err code:10): Problem with SELECT function or the printing of the table")
             return
 
+        changed_at_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        new_status_history = status_history + "\n" + f"{changed_at_time} - {new_status}"
+
         #11. Обновяване на current_status
         try:
             self.cursor.execute(
@@ -201,7 +188,7 @@ class DB:
                 SET  current_status = ?
                 WHERE tracking_number = ?; 
                 """,
-                    (datetime.now().strftime("%d/%m/%Y %H:%M:%S") + " - " + value, tracking_number)
+                    (new_status, tracking_number)
             )
         except sqlite3.Error:
             print("SQLite error(err code:11): Problem with SELECT function or the printing of the table")
@@ -209,21 +196,21 @@ class DB:
             return
 
         #12. Обновяване на history_status = (history_status + current_staus)
-        if current_status != status_history:
-            try:
-                self.cursor.execute(
-                    """ 
-                    UPDATE shipments
-                    SET  status_history = ?
-                    WHERE tracking_number = ?; 
-                    """,
-                    (str(status_history) + "\n" + str(current_status), tracking_number)
-                )
-                datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-            except sqlite3.Error:
-                print("SQLite error(err code:12): Problem with SELECT function or the printing of the table")
-                self.conn.rollback()
-                return
+        try:
+            self.cursor.execute(
+                """ 
+                UPDATE shipments
+                SET  status_history = ?
+                WHERE tracking_number = ?; 
+                """,
+                (new_status_history, tracking_number)
+            )
+
+        except sqlite3.Error:
+            print("SQLite error(err code:12): Problem with SELECT function or the printing of the table")
+            self.conn.rollback()
+            return
+
         self.print_status_history(tracking_number)
         self.commit()
 
