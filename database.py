@@ -128,7 +128,7 @@ class DB:
     # 6. SHOW All
     def print_all(self):
          try:
-            self.cursor.execute("SELECT * FROM shipments;")
+            self.cursor.execute("SELECT tracking_number, origin_city, destination_city, weight, current_status  FROM shipments;")
             shipments = self.cursor.fetchall()
 
             return shipments
