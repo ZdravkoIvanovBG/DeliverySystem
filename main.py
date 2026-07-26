@@ -11,7 +11,7 @@ def add_package_menu():
     recipient_name = input("Enter recipient name: ")
     origin_city = input("Enter origin city: ")
     destination_city = input("Enter destination city: ")
-    weight = input("Enter weight: ")
+    weight = float(input("Enter weight: "))
     add_delivery(db, tracking_number, sender_name, recipient_name, origin_city, destination_city, weight)
 
 
@@ -71,7 +71,7 @@ def main():
         case "3":
             search_by_tracking_number_menu()
         case "4":
-            change_status_menu( )
+            change_status_menu()
         case "5":
             show_history_menu()
         case "6":

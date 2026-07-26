@@ -123,7 +123,7 @@ class DB:
                 print("No shipments found with the given tracking number.")
                 return None
 
-            return shipments_row[0]
+            return shipments_row
 
         except sqlite3.Error:
             print("SQLite error(err code:7): Problem with SELECT function or the printing of the table")
