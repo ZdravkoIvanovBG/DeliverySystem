@@ -158,7 +158,14 @@ class DB:
             """,
                 (tracking_number,)
             )
-            status_history = self.cursor.fetchone()[0]
+            status_history = self.cursor.fetchone()
+
+            if not status_history:
+                print("No shipments found with the given tracking number.")
+                return None
+
+            status_history = status_history[0]
+
         except sqlite3.Error:
             print("SQLite error(err code:10): Problem with SELECT function or the printing of the table")
             return
@@ -172,7 +179,7 @@ class DB:
                 """
                    UPDATE shipments
                 SET  current_status = ?
-                WHERE tracking_number = ?; 
+                WHERE tracking_number = ?;
                 """,
                     (new_status, tracking_number)
             )
@@ -184,10 +191,10 @@ class DB:
         #12. Обновяване на history_status = (history_status + current_staus)
         try:
             self.cursor.execute(
-                """ 
+                """
                 UPDATE shipments
                 SET  status_history = ?
-                WHERE tracking_number = ?; 
+                WHERE tracking_number = ?;
                 """,
                 (new_status_history, tracking_number)
             )
@@ -244,3 +251,22 @@ class DB:
         except sqlite3.Error:
             print("SQLite error(err code:15): Problem with SELECT function")
             return []
+
+    # 16. Представяне на броя пратки, по желание и по статус
+    def count_deliveries(self, status=None):
+        try:
+            if status:
+                self.cursor.execute(
+                    f"""
+                SELECT COUNT(*) FROM shipments WHERE current_status = ?;
+                """,
+                    (status,)
+                )
+            else:
+                self.cursor.execute("SELECT COUNT(*) FROM shipments;")
+
+            count = self.cursor.fetchone()[0]
+            return count
+        except sqlite3.Error:
+            print("SQLite error(err code:16): Problem with SELECT function")
+            return None
