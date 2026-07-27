@@ -49,6 +49,7 @@ def process_multiple_undelivered_shipments_menu():
     for tracking_number, new_status in results:
         db.update_state(tracking_number, new_status)
 
+# Make a cycle
 def main():
 
     print("\n========= DELIVERY MENU =========")

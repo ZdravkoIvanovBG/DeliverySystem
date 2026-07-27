@@ -120,7 +120,7 @@ def search_by_tracking_number(db, tracking_number):
 
     shipment = db.print_by_tracking_num(tracking_number)
 
-    if not search_by_tracking_number:
+    if not shipment:
         print("Такава пратка не съществува")
         return
 

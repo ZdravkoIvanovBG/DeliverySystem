@@ -148,7 +148,7 @@ class DB:
         except sqlite3.Error:
             print("SQLite error(err code:8): Problem with SELECT function or the printing of the table")
 
-    # 9-12. Update status
+    # 9-12. Update status # Not having a validation for a missing tracking number
     def update_state(self, tracking_number, new_status):
         #10. Взимане на status_history
         try:
