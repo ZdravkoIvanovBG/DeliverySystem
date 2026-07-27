@@ -244,3 +244,22 @@ class DB:
         except sqlite3.Error:
             print("SQLite error(err code:15): Problem with SELECT function")
             return []
+
+    # 16. Представяне на броя пратки, по желание и по статус
+    def count_deliveries(self, status=None):
+        try:
+            if status:
+                self.cursor.execute(
+                    f"""
+                SELECT COUNT(*) FROM shipments WHERE current_status = ?;
+                """,
+                    (status,)
+                )
+            else:
+                self.cursor.execute("SELECT COUNT(*) FROM shipments;")
+
+            count = self.cursor.fetchone()[0]
+            return count
+        except sqlite3.Error:
+            print("SQLite error(err code:16): Problem with SELECT function")
+            return None
