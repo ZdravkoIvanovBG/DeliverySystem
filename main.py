@@ -51,39 +51,43 @@ def process_multiple_undelivered_shipments_menu():
 
 def main():
 
-    print("\n========= DELIVERY MENU =========")
-    print("1. Add a delivery")
-    print("2. Show all delivers")
-    print("3. Search by tracking number")
-    print("4. Change status")
-    print("5. Show history")
-    print("6. Delete package")
-    print("7. Process multiple shipments")
-    print("8. Exit")
+    is_running = True
 
-    choice = input("Choose an option: ")
+    while is_running:
 
-    match choice:
-        case "1":
-            add_package_menu()
-        case "2":
-            show_all_delivers()
-        case "3":
-            search_by_tracking_number_menu()
-        case "4":
-            change_status_menu()
-        case "5":
-            show_history_menu()
-        case "6":
-            delete_package_menu()
-        case "7":
-            process_multiple_undelivered_shipments_menu()
-        case "8":
-            db.close_database()
-            print("Goodbye!")
-            is_running = False
-        case _:
-            print("Invalid choice. Please try again.")
+        print("\n========= DELIVERY MENU =========")
+        print("1. Add a delivery")
+        print("2. Show all delivers")
+        print("3. Search by tracking number")
+        print("4. Change status")
+        print("5. Show history")
+        print("6. Delete package")
+        print("7. Process multiple shipments")
+        print("8. Exit")
 
-if "__main__" == __name__:
+        choice = input("Choose an option: ")
+
+        match choice:
+            case "1":
+                add_package_menu()
+            case "2":
+                show_all_delivers()
+            case "3":
+                search_by_tracking_number_menu()
+            case "4":
+                change_status_menu()
+            case "5":
+                show_history_menu()
+            case "6":
+                delete_package_menu()
+            case "7":
+                process_multiple_undelivered_shipments_menu()
+            case "8":
+                db.close_database()
+                print("Goodbye!")
+                is_running = False
+            case _:
+                print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
     main()
