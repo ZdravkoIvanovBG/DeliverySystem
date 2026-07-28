@@ -253,7 +253,7 @@ class DB:
             return []
 
     # 16. Представяне на броя пратки, по желание и по статус
-    def count_deliveries(self, status=None):
+    def count_deliveries(self, status):
         try:
             if status:
                 self.cursor.execute(

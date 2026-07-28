@@ -143,4 +143,7 @@ def delete_package(db, tracking_number):
 
     db.delete_package(tracking_number)
 
+def get_count_deliveries(db, status=None):
+    number_of_deliveries = db.count_deliveries(status)
 
+    print(f"Брой пратки: {number_of_deliveries}")
