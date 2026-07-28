@@ -136,6 +136,7 @@ def show_history(db, tracking_number):
 
     if not shipment:
         print("Няма пратка с този номер")
+        return
     print(shipment)
 
 def delete_package(db, tracking_number):
