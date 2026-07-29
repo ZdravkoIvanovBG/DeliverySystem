@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+from logger import logger  # добавено: логване на действията
 
 
 class DB:
@@ -91,12 +92,17 @@ class DB:
             )
         except sqlite3.OperationalError:
             print("SQLite error(err code:5): Insert function wasn't able to be implemented correctly")
+            logger.error(f"Insert failed for tracking_number={shipment.tracking_number}")  # добавено
             return False
         except sqlite3.IntegrityError:
             print("SQLite error(err code:5): The tracking number already exists")
+            logger.warning(f"Duplicate tracking_number={shipment.tracking_number}")  # добавено
             return False
 
-        return self.commit()
+        result = self.commit()
+        if result:
+            logger.info(f"Shipment created: {shipment.tracking_number}")  # добавено
+        return result
 
     # 6. SHOW All
     def print_all(self):
@@ -205,7 +211,10 @@ class DB:
             return
 
         self.print_status_history(tracking_number)
-        self.commit()
+        result = self.commit()
+        if result:
+            logger.info(f"Status updated: {tracking_number} -> {new_status}")  # добавено
+        return result
 
     #13. DELETE
     def delete_package(self, tracking_number):
@@ -224,7 +233,10 @@ class DB:
             return False
 
         print(f"You are currently deleting package - {tracking_number}!!!")
-        self.commit()
+        result = self.commit()
+        if result:
+            logger.info(f"Shipment deleted: {tracking_number}")  # добавено
+        return result
 
     # 14. Затваряне на връзката
     def close_database(self):
@@ -252,21 +264,28 @@ class DB:
             print("SQLite error(err code:15): Problem with SELECT function")
             return []
 
-    # 16. Представяне на броя пратки, по желание и по статус
-    def count_deliveries(self, status):
+    # 16. Филтриране по статус, град и/или минимално тегло (ново, допълнителна задача)
+    def filter_shipments(self, status=None, city=None, min_weight=None):
         try:
-            if status:
-                self.cursor.execute(
-                    f"""
-                SELECT COUNT(*) FROM shipments WHERE current_status = ?;
-                """,
-                    (status,)
-                )
-            else:
-                self.cursor.execute("SELECT COUNT(*) FROM shipments;")
+            query = (
+                "SELECT tracking_number, origin_city, destination_city, weight, current_status "
+                "FROM shipments WHERE 1=1"
+            )
+            params = []
 
-            count = self.cursor.fetchone()[0]
-            return count
-        except sqlite3.Error:
-            print("SQLite error(err code:16): Problem with SELECT function")
-            return None
+            if status:
+                query += " AND current_status = ?"
+                params.append(status)
+            if city:
+                query += " AND (origin_city LIKE ? COLLATE NOCASE OR destination_city LIKE ? COLLATE NOCASE)"
+                params.extend([f"%{city}%", f"%{city}%"])
+            if min_weight is not None:
+                query += " AND weight >= ?"
+                params.append(min_weight)
+
+            query += ";"
+            self.cursor.execute(query, tuple(params))
+            return self.cursor.fetchall()
+        except sqlite3.Error as error:
+            print(f"SQLite error(err code:16): {error}")
+            return []
