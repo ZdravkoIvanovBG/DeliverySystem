@@ -1,5 +1,8 @@
 from datetime import datetime
 
+import colors  # добавено: цветен изход
+
+
 class Shipment:
     ALLOWED_STATUSES = [
         'Регистрирана',
@@ -79,7 +82,7 @@ class Shipment:
 
     @weight.setter
     def weight(self, value):
-        if value <= 0 or not isinstance(value, (int, float)):
+        if not isinstance(value, (int, float)) or value <= 0:  # поправено: първо проверка на типа
             raise ValueError("Weight must be greater than 0 and be a number")
         self.__weight = value
 
@@ -92,58 +95,69 @@ class Shipment:
         self.current_status = new_status
         self.status_history += f"\n{time_of_change} - {new_status}"
 
+
 def add_delivery(db, tracking_number, sender_name, recipient_name, origin_city, destination_city, weight):
     try:
         shipment = Shipment(tracking_number, sender_name, recipient_name, origin_city, destination_city, weight)
     except ValueError as e:
-        print(e)
+        print(colors.error(str(e)))
         return False
 
     success = db.create_package(shipment)
 
     if success:
-        print("Пратката е добавена успешно")
+        print(colors.success("Пратката е добавена успешно"))
 
     return success
 
+
 def show_all_deliveries(db):
     all_shipments = db.print_all()
+    _print_shipment_rows(all_shipments)
 
-    if not all_shipments:
-        print("Няма пратки.")
-        return
-
-    for tracking_number, origin_city, destination_city, weight, current_status in all_shipments:
-        print(f"{tracking_number} | {origin_city} -> {destination_city} | {weight}kg | {current_status}")
 
 def search_by_tracking_number(db, tracking_number):
-
     shipment = db.print_by_tracking_num(tracking_number)
 
     if not shipment:
-        print("Такава пратка не съществува")
+        print(colors.warning("Такава пратка не съществува"))
         return
 
     print(shipment)
 
+
 def change_status(db, tracking_number, new_status):
+    if new_status not in Shipment.ALLOWED_STATUSES:  # поправено: валидация на статуса
+        print(colors.error("Невалиден статус. Изберете от предварително зададения списък."))
+        return False
 
     db.update_state(tracking_number, new_status)
+    return True
+
 
 def show_history(db, tracking_number):
-
     shipment = db.print_status_history(tracking_number)
 
     if not shipment:
-        print("Няма пратка с този номер")
+        print(colors.warning("Няма пратка с този номер"))
         return
     print(shipment)
 
-def delete_package(db, tracking_number):
 
+def delete_package(db, tracking_number):
     db.delete_package(tracking_number)
 
-def get_count_deliveries(db, status=None):
-    number_of_deliveries = db.count_deliveries(status)
 
-    print(f"Брой пратки: {number_of_deliveries}")
+def filter_shipments(db, status=None, city=None, min_weight=None):
+    """Допълнителна задача (ново): филтриране по статус, град и/или минимално тегло."""
+    results = db.filter_shipments(status=status, city=city, min_weight=min_weight)
+    _print_shipment_rows(results)
+
+
+def _print_shipment_rows(rows):
+    if not rows:
+        print(colors.warning("Няма намерени пратки."))
+        return
+
+    for tracking_number, origin_city, destination_city, weight, current_status in rows:
+        print(f"{tracking_number} | {origin_city} -> {destination_city} | {weight}kg | {current_status}")

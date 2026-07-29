@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+from logger import logger  # добавено: логване на действията
 
 
 class DB:
@@ -91,12 +92,17 @@ class DB:
             )
         except sqlite3.OperationalError:
             print("SQLite error(err code:5): Insert function wasn't able to be implemented correctly")
+            logger.error(f"Insert failed for tracking_number={shipment.tracking_number}")  # добавено
             return False
         except sqlite3.IntegrityError:
             print("SQLite error(err code:5): The tracking number already exists")
+            logger.warning(f"Duplicate tracking_number={shipment.tracking_number}")  # добавено
             return False
 
-        return self.commit()
+        result = self.commit()
+        if result:
+            logger.info(f"Shipment created: {shipment.tracking_number}")  # добавено
+        return result
 
     # 6. SHOW All
     def print_all(self):
@@ -161,7 +167,8 @@ class DB:
             status_history = self.cursor.fetchone()
 
             if not status_history:
-                return "Няма пратки с този номер"
+                print("No shipments found with the given tracking number.")
+                return None
 
             status_history = status_history[0]
 
@@ -204,7 +211,10 @@ class DB:
             return
 
         self.print_status_history(tracking_number)
-        self.commit()
+        result = self.commit()
+        if result:
+            logger.info(f"Status updated: {tracking_number} -> {new_status}")  # добавено
+        return result
 
     #13. DELETE
     def delete_package(self, tracking_number):
@@ -223,7 +233,10 @@ class DB:
             return False
 
         print(f"You are currently deleting package - {tracking_number}!!!")
-        self.commit()
+        result = self.commit()
+        if result:
+            logger.info(f"Shipment deleted: {tracking_number}")  # добавено
+        return result
 
     # 14. Затваряне на връзката
     def close_database(self):
@@ -251,101 +264,28 @@ class DB:
             print("SQLite error(err code:15): Problem with SELECT function")
             return []
 
-    # 16. Представяне на броя пратки, по желание и по статус
-    def count_deliveries(self, status):
+    # 16. Филтриране по статус, град и/или минимално тегло (ново, допълнителна задача)
+    def filter_shipments(self, status=None, city=None, min_weight=None):
         try:
+            query = (
+                "SELECT tracking_number, origin_city, destination_city, weight, current_status "
+                "FROM shipments WHERE 1=1"
+            )
+            params = []
+
             if status:
-                self.cursor.execute(
-                    f"""
-                SELECT COUNT(*) FROM shipments WHERE current_status = ?;
-                """,
-                    (status,)
-                )
-            else:
-                self.cursor.execute("SELECT COUNT(*) FROM shipments;")
+                query += " AND current_status = ?"
+                params.append(status)
+            if city:
+                query += " AND (origin_city LIKE ? COLLATE NOCASE OR destination_city LIKE ? COLLATE NOCASE)"
+                params.extend([f"%{city}%", f"%{city}%"])
+            if min_weight is not None:
+                query += " AND weight >= ?"
+                params.append(min_weight)
 
-            count = self.cursor.fetchone()[0]
-            return count
-        except sqlite3.Error:
-            print("SQLite error(err code:16): Problem with SELECT function")
-            return None
-
-    # 17. Сумиране на тежестта на всички пратки
-    def sum_total_weight(self):
-        try:
-            self.cursor.execute("SELECT SUM(weight) FROM shipments;")
-
-            total_weight = self.cursor.fetchone()[0]
-
-            if not total_weight:
-                return 0
-
-            return total_weight
-
-        except sqlite3.Error:
-            print("SQLite error(err code:17): Problem with SELECT function")
-            return None
-
-    def average_weight(self):
-        try:
-            self.cursor.execute("SELECT AVG(weight) FROM shipments;")
-
-            average_weight = self.cursor.fetchone()[0]
-
-            if not average_weight:
-                return 0
-
-            return average_weight
-        except sqlite3.Error:
-            print("SQLite error(err code:17): Problem with SELECT function")
-            return None
-
-    def search_by_name_or_town(self, search_term):
-        try:
-            search_pattern = f"%{search_term}%"
-            self.cursor.execute(
-                """
-                SELECT * FROM shipments WHERE sender_name LIKE ? OR origin_city LIKE ? OR destination_city LIKE ?;
-                """,
-                (search_pattern, search_pattern, search_pattern)
-            )
-
-            deliveries = self.cursor.fetchall()
-
-            if not deliveries:
-                return "Няма пратки с това име"
-
-            return deliveries
-        except sqlite3.Error:
-            print("SQLite error(err code:18): Problem with SELECT function")
-            return None
-
-    def order_deliveries_by_weight_date_city(self, sort_by, direction):
-        columns = {
-            'weight': 'weight',
-            'date': 'created_at',
-            'city': 'origin_city'
-        }
-
-        sort_by_column = columns[sort_by]
-        sort_direction = 'DESC' if direction == "d" else 'ASC'
-
-        try:
-            self.cursor.execute(
-                f"""
-                SELECT tracking_number, origin_city, destination_city, weight, current_status, created_at
-                FROM shipments
-                ORDER BY {sort_by_column} {sort_direction};
-                """,
-            )
-
-            deliveries = self.cursor.fetchall()
-
-            if not deliveries:
-                return "В момента няма пратки в системата!"
-
-            return deliveries
-        except sqlite3.Error:
-            print("SQLite error(err code:19): Problem with SELECT function")
-            return None
-
+            query += ";"
+            self.cursor.execute(query, tuple(params))
+            return self.cursor.fetchall()
+        except sqlite3.Error as error:
+            print(f"SQLite error(err code:16): {error}")
+            return []
