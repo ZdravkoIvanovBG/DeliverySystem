@@ -161,8 +161,7 @@ class DB:
             status_history = self.cursor.fetchone()
 
             if not status_history:
-                print("No shipments found with the given tracking number.")
-                return None
+                return "Няма пратки с този номер"
 
             status_history = status_history[0]
 
@@ -270,3 +269,83 @@ class DB:
         except sqlite3.Error:
             print("SQLite error(err code:16): Problem with SELECT function")
             return None
+
+    # 17. Сумиране на тежестта на всички пратки
+    def sum_total_weight(self):
+        try:
+            self.cursor.execute("SELECT SUM(weight) FROM shipments;")
+
+            total_weight = self.cursor.fetchone()[0]
+
+            if not total_weight:
+                return 0
+
+            return total_weight
+
+        except sqlite3.Error:
+            print("SQLite error(err code:17): Problem with SELECT function")
+            return None
+
+    def average_weight(self):
+        try:
+            self.cursor.execute("SELECT AVG(weight) FROM shipments;")
+
+            average_weight = self.cursor.fetchone()[0]
+
+            if not average_weight:
+                return 0
+
+            return average_weight
+        except sqlite3.Error:
+            print("SQLite error(err code:17): Problem with SELECT function")
+            return None
+
+    def search_by_name_or_town(self, search_term):
+        try:
+            search_pattern = f"%{search_term}%"
+            self.cursor.execute(
+                """
+                SELECT * FROM shipments WHERE sender_name LIKE ? OR origin_city LIKE ? OR destination_city LIKE ?;
+                """,
+                (search_pattern, search_pattern, search_pattern)
+            )
+
+            deliveries = self.cursor.fetchall()
+
+            if not deliveries:
+                return "Няма пратки с това име"
+
+            return deliveries
+        except sqlite3.Error:
+            print("SQLite error(err code:18): Problem with SELECT function")
+            return None
+
+    def order_deliveries_by_weight_date_city(self, sort_by, direction):
+        columns = {
+            'weight': 'weight',
+            'date': 'created_at',
+            'city': 'origin_city'
+        }
+
+        sort_by_column = columns[sort_by]
+        sort_direction = 'DESC' if direction == "d" else 'ASC'
+
+        try:
+            self.cursor.execute(
+                f"""
+                SELECT tracking_number, origin_city, destination_city, weight, current_status, created_at
+                FROM shipments
+                ORDER BY {sort_by_column} {sort_direction};
+                """,
+            )
+
+            deliveries = self.cursor.fetchall()
+
+            if not deliveries:
+                return "В момента няма пратки в системата!"
+
+            return deliveries
+        except sqlite3.Error:
+            print("SQLite error(err code:19): Problem with SELECT function")
+            return None
+
