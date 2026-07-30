@@ -10,6 +10,21 @@ import colors  # добавено
 
 db = DB()
 
+def get_processing_amount(total_available):
+    while True:
+        amount = input("Enter amount of shipments to process (minimum 3): ").strip()
+
+        try:
+            amount = int(amount)
+        except ValueError:
+            print(colors.warning("Invalid input. Please enter a valid number."))
+            continue
+
+        if amount < 3 or amount > total_available:
+            print(colors.error("Invalid amount. Please enter a number between 3 and the number of undelivered shipments."))
+            continue
+
+        return amount
 
 def get_valid_text(message, allow_numeric=True):
     while True:
@@ -114,11 +129,15 @@ def process_multiple_undelivered_shipments_menu():
         print(colors.warning("There has to be at least 3 undelivered shipments to process them."))
         return
 
-    results = process_undelivered_shipments(tracking_numbers)
+    amount = get_processing_amount(len(tracking_numbers))
+    selected_numbers = tracking_numbers[:amount]
+
+    results = process_undelivered_shipments(selected_numbers)
 
     for tracking_number, new_status in results:
         db.update_state(tracking_number, new_status)
 
+    print(colors.success(f"{len(results)} shipments processed successfully!"))
 
 def process_multiple_undelivered_shipments_thread_menu():  # ново
     tracking_numbers = db.get_undelivered_tracking_numbers()
@@ -127,11 +146,15 @@ def process_multiple_undelivered_shipments_thread_menu():  # ново
         print(colors.warning("There has to be at least 3 undelivered shipments to process them."))
         return
 
-    results = process_undelivered_shipments_with_threads(tracking_numbers)
+    amount = get_processing_amount(len(tracking_numbers))
+    selected_numbers = tracking_numbers[:amount]
+
+    results = process_undelivered_shipments_with_threads(selected_numbers)
 
     for tracking_number, new_status in results:
         db.update_state(tracking_number, new_status)
 
+    print(colors.success(f"{len(results)} shipments processed successfully!"))
 
 def filter_shipments_menu():  # ново
     status = _choose_status()
