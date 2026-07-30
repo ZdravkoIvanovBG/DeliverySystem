@@ -40,10 +40,10 @@ def search_by_tracking_number_menu():
 def _choose_status():  # ново: помощна функция за филтъра по статус
     print(colors.title("Изберете статус:"))
     for i, status in enumerate(Shipment.ALLOWED_STATUSES, start=1):
-        print(f"{i}. {status}")
+        print(colors.menu_item(i, status))
 
     while True:
-        choice = input("Enter number (или Enter за без филтър по статус): ").strip()
+        choice = input(colors.info("Enter number (или Enter за без филтър по статус): ")).strip()
         if choice == "":
             return None
 
@@ -59,9 +59,9 @@ def change_status_menu():
 
     print(colors.title("Изберете нов статус:"))  # поправено: избор от списък, не свободен текст
     for i, status in enumerate(Shipment.ALLOWED_STATUSES, start=1):
-        print(f"{i}. {status}")
+        print(colors.menu_item(i, status))
 
-    choice = input("Enter number: ")
+    choice = input(colors.info("Enter number: "))
 
     try:
         index = int(choice) - 1
@@ -197,24 +197,24 @@ def main():
 
     while is_running:
         print(colors.title("\n========= DELIVERY MENU ========="))
-        print("1. Add a delivery")
-        print("2. Show all deliveries")
-        print("3. Search by tracking number")
-        print("4. Filter deliveries")  # ново
-        print("5. Change status")
-        print("6. Show history")
-        print("7. Delete package")
-        print("8. Process multiple shipments (ThreadPoolExecutor)")
-        print("9. Process multiple shipments (Thread class)")  # ново
-        print("10. Order deliveries")
-        print("11. Search by name or town")
-        print("12. Average weight of all deliveries")
-        print("13. Sum of total weight of all deliveries")
-        print("14. Count Deliveries By Status(Optional)")
-        print("15. Edit delivery")
-        print("0. Exit")
+        print(colors.menu_item(1, "Add a delivery"))
+        print(colors.menu_item(2, "Show all deliveries"))
+        print(colors.menu_item(3, "Search by tracking number"))
+        print(colors.menu_item(4, "Filter deliveries"))  # ново
+        print(colors.menu_item(5, "Change status"))
+        print(colors.menu_item(6, "Show history"))
+        print(colors.menu_item(7, "Delete package"))
+        print(colors.menu_item(8, "Process multiple shipments (ThreadPoolExecutor)"))
+        print(colors.menu_item(9, "Process multiple shipments (Thread class)"))  # ново
+        print(colors.menu_item(10, "Order deliveries"))
+        print(colors.menu_item(11, "Search by name or town"))
+        print(colors.menu_item(12, "Average weight of all deliveries"))
+        print(colors.menu_item(13, "Sum of total weight of all deliveries"))
+        print(colors.menu_item(14, "Count Deliveries By Status(Optional)"))
+        print(colors.menu_item(15, "Edit delivery"))
+        print(colors.menu_exit(0, "Exit"))
 
-        choice = input("Choose an option: ")
+        choice = input(colors.info("Choose an option: "))
 
         match choice:
             case "1":

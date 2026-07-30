@@ -6,6 +6,8 @@ class Colors:
     YELLOW = "\033[93m"
     BLUE = "\033[94m"
     CYAN = "\033[96m"
+    MAGENTA = "\033[95m"
+    WHITE = "\033[97m"
 
 
 def success(text):
@@ -26,3 +28,11 @@ def info(text):
 
 def title(text):
     return f"{Colors.BOLD}{Colors.BLUE}{text}{Colors.RESET}"
+
+
+def menu_item(number, text):
+    return f"{Colors.BOLD}{Colors.MAGENTA}{number}.{Colors.RESET} {Colors.WHITE}{text}{Colors.RESET}"
+
+
+def menu_exit(number, text):
+    return f"{Colors.BOLD}{Colors.RED}{number}.{Colors.RESET} {Colors.YELLOW}{text}{Colors.RESET}"
