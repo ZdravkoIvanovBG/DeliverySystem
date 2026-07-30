@@ -11,7 +11,7 @@ import colors  # добавено
 db = DB()
 
 
-def get_valid_text(message):
+def get_valid_text(message, allow_numeric=True):
     while True:
         user_input = input(message).strip()
 
@@ -21,13 +21,14 @@ def get_valid_text(message):
             continue
 
         # 2. Check if the input is a number (positive, negative, or decimal)
-        try:
-            float(user_input)
-            # If the above line succeeds, it means they entered a pure number
-            print(colors.warning("Error: Input cannot be just a number. Please enter valid text."))
-            continue
-        except ValueError:
-            pass
+        if not allow_numeric:
+            try:
+                float(user_input)
+                # If the above line succeeds, it means they entered a pure number
+                print(colors.warning("Error: Input cannot be just a number. Please enter valid text."))
+                continue
+            except ValueError:
+                pass
 
         has_valid_chars = all(char.isalnum() or char.isspace() or char == '-' for char in user_input)
 
@@ -38,11 +39,11 @@ def get_valid_text(message):
         return user_input
 
 def add_package_menu():
-    tracking_number = get_valid_text("Enter tracking number: ")
-    sender_name = get_valid_text("Enter sender name: ")
-    recipient_name = get_valid_text("Enter recipient name: ")
-    origin_city = get_valid_text("Enter origin city: ")
-    destination_city = get_valid_text("Enter destination city: ")
+    tracking_number = get_valid_text("Enter tracking number: ", allow_numeric=True)
+    sender_name = get_valid_text("Enter sender name: ", allow_numeric=False)
+    recipient_name = get_valid_text("Enter recipient name: ", allow_numeric=False)
+    origin_city = get_valid_text("Enter origin city: ", allow_numeric=False)
+    destination_city = get_valid_text("Enter destination city: ", allow_numeric=False)
 
     while True:
         try:
@@ -198,7 +199,7 @@ def edit_delivery_menu():
         print(colors.error("Invalid field. Please choose from the available options."))
 
     while True:
-        new_value = get_valid_text(f"Enter new value for {field}: ")
+        new_value = get_valid_text(f"Enter new value for {field}: ", allow_numeric=(field == "weight"))
 
         if field == "weight":
             try:
