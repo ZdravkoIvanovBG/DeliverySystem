@@ -137,7 +137,7 @@ def change_status(db, tracking_number, new_status):
         print(colors.error("There's no delivery with the given tracking number"))
         return False
     else:
-        if current_status == new_status:
+        if current_status[0] == new_status:
             print(colors.error("The status is already the same as the one you entered"))
             return False
 
