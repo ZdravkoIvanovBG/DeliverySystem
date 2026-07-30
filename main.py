@@ -1,7 +1,8 @@
 from database import DB
 from shipments import (
     add_delivery, show_all_deliveries, search_by_tracking_number, change_status, show_history,
-    delete_package, filter_shipments, Shipment  # filter_shipments, Shipment - добавени
+    delete_package, filter_shipments, Shipment, order_deliveries,
+    search_by_name_or_town, average_weight, sum_total_weight, count_deliveries  # filter_shipments, Shipment - добавени
 )
 from workers import process_undelivered_shipments, process_undelivered_shipments_with_threads  # вторият - нов
 import colors  # добавено
@@ -40,17 +41,17 @@ def _choose_status():  # ново: помощна функция за филтъ
     for i, status in enumerate(Shipment.ALLOWED_STATUSES, start=1):
         print(f"{i}. {status}")
 
-    choice = input("Enter number (или Enter за без филтър по статус): ").strip()
-    if choice == "":
-        return None
+    while True:
+        choice = input("Enter number (или Enter за без филтър по статус): ").strip()
+        if choice == "":
+            return None
 
-    try:
-        index = int(choice) - 1
-        return Shipment.ALLOWED_STATUSES[index]
-    except (ValueError, IndexError):
-        print(colors.error("Невалиден избор."))
-        return None
-
+        try:
+            index = int(choice) - 1
+            return Shipment.ALLOWED_STATUSES[index]
+        except (ValueError, IndexError):
+            print(colors.error("Невалиден избор."))
+            pass
 
 def change_status_menu():
     tracking_number = input("Enter tracking number: ")
@@ -122,6 +123,42 @@ def filter_shipments_menu():  # ново
 
     filter_shipments(db, status=status, city=city, min_weight=min_weight)
 
+def order_deliveries_menu():
+    valid_options = ["weight", "date", "city"]
+
+    while True:
+        sort_by = input("Sort by (weight, date, city): ").lower().strip()
+
+        if sort_by in valid_options:
+            break
+
+        print(colors.error("Invalid option. Please choose from the available options."))
+
+    while True:
+        direction = input("Direction (d for descending, a for ascending): ").lower().strip()
+
+        if direction in ["d", "a"]:
+            break
+
+        print(colors.error("Invalid direction. Please choose 'd' for descending or 'a' for ascending."))
+
+    order_deliveries(db, sort_by, direction)
+
+def search_by_name_or_town_menu():
+    search_term = input("Please enter a sender name or a town name: ")
+
+    search_by_name_or_town(db, search_term)
+
+def average_weight_menu():
+    average_weight(db)
+
+def sum_total_weight_menu():
+    sum_total_weight(db)
+
+def count_deliveries_menu():
+    status = _choose_status()
+
+    count_deliveries(db, status)
 
 def main():
     is_running = True
@@ -137,6 +174,11 @@ def main():
         print("7. Delete package")
         print("8. Process multiple shipments (ThreadPoolExecutor)")
         print("9. Process multiple shipments (Thread class)")  # ново
+        print("10. Order deliveries")
+        print("11. Search by name or town")
+        print("12. Average weight of all deliveries")
+        print("13. Sum of total weight of all deliveries")
+        print("14. Count Deliveries By Status(Optional)")
         print("0. Exit")
 
         choice = input("Choose an option: ")
@@ -160,6 +202,16 @@ def main():
                 process_multiple_undelivered_shipments_menu()
             case "9":
                 process_multiple_undelivered_shipments_thread_menu()
+            case "10":
+                order_deliveries_menu()
+            case "11":
+                search_by_name_or_town_menu()
+            case "12":
+                average_weight_menu()
+            case "13":
+                sum_total_weight_menu()
+            case "14":
+                count_deliveries_menu()
             case "0":
                 db.close_database()
                 print(colors.success("Goodbye!"))

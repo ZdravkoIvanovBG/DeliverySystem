@@ -106,7 +106,7 @@ def add_delivery(db, tracking_number, sender_name, recipient_name, origin_city, 
     success = db.create_package(shipment)
 
     if success:
-        print(colors.success("Пратката е добавена успешно"))
+        print(colors.success("The delivery was added successfully!"))
 
     return success
 
@@ -120,11 +120,11 @@ def search_by_tracking_number(db, tracking_number):
     shipment = db.print_by_tracking_num(tracking_number)
 
     if not shipment:
-        print(colors.warning("Такава пратка не съществува"))
+        print(colors.warning("There's no delivery with the given tracking number"))
         return
 
-    print(shipment)
-
+    for tracking_number, sender_name, recipient_name, origin_city, destination_city, weight, current_status in shipment:
+        print(f"{tracking_number} | {sender_name} | {recipient_name} | {origin_city} -> {destination_city} | {weight}kg | {current_status}")
 
 def change_status(db, tracking_number, new_status):
     if new_status not in Shipment.ALLOWED_STATUSES:  # поправено: валидация на статуса
@@ -139,7 +139,7 @@ def show_history(db, tracking_number):
     shipment = db.print_status_history(tracking_number)
 
     if not shipment:
-        print(colors.warning("Няма пратка с този номер"))
+        print(colors.warning("There's no delivery with the given tracking number"))
         return
     print(shipment)
 
@@ -156,8 +156,41 @@ def filter_shipments(db, status=None, city=None, min_weight=None):
 
 def _print_shipment_rows(rows):
     if not rows:
-        print(colors.warning("Няма намерени пратки."))
+        print(colors.warning("No deliveries found matching the criteria."))
         return
 
     for tracking_number, origin_city, destination_city, weight, current_status in rows:
         print(f"{tracking_number} | {origin_city} -> {destination_city} | {weight}kg | {current_status}")
+
+def order_deliveries(db, sort_by, direction):
+    shipments = db.order_deliveries_by_weight_date_city(sort_by, direction)
+
+    if not shipments:
+        print(colors.warning("No deliveries found matching the criteria."))
+    else:
+        for tracking_number, origin_city, destination_city, weight, current_status, created_at in shipments:
+            print(f"{tracking_number} | {origin_city} -> {destination_city} | {weight}kg | {current_status} | {created_at}")
+
+def search_by_name_or_town(db, search_term):
+    deliveries = db.search_by_name_or_town(search_term)
+
+    if not deliveries:
+        print(colors.warning("No deliveries found matching the criteria."))
+    else:
+        for tracking_number, sender_name, origin_city, destination_city, weight, current_status in deliveries:
+            print(f"{tracking_number} | {sender_name} | {origin_city} -> {destination_city} | {weight}kg | {current_status}")
+
+def average_weight(db):
+    avg_weight = db.average_weight()
+
+    print(f"Average weight: {avg_weight}kg")
+
+def sum_total_weight(db):
+    total_weight = db.sum_total_weight()
+
+    print(f"Total weight: {total_weight}kg")
+
+def count_deliveries(db, status):
+    count = db.count_deliveries(status)
+
+    print(f"Number of deliveries: {count}")

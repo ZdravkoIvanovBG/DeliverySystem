@@ -119,17 +119,13 @@ class DB:
     def print_by_tracking_num(self, tracking_number):
         try:
             self.cursor.execute(
-                "SELECT * FROM shipments WHERE tracking_number= ?;",
+                "SELECT tracking_number, sender_name, recipient_name, origin_city, destination_city, weight, current_status "
+                "FROM shipments "
+                "WHERE tracking_number= ?;",
                 (tracking_number,)
             )
 
-            shipments_row = self.cursor.fetchone()
-
-            if shipments_row is None:
-                print("No shipments found with the given tracking number.")
-                return None
-
-            return shipments_row
+            return self.cursor.fetchall()
 
         except sqlite3.Error:
             print("SQLite error(err code:7): Problem with SELECT function or the printing of the table")
@@ -147,7 +143,6 @@ class DB:
             shipments_row = self.cursor.fetchone()
 
             if shipments_row is None:
-                print("No shipments found with the given tracking number.")
                 return None
 
             return shipments_row[0]
@@ -289,3 +284,122 @@ class DB:
         except sqlite3.Error as error:
             print(f"SQLite error(err code:16): {error}")
             return []
+
+    def order_deliveries_by_weight_date_city(self, sort_by, direction):
+        columns = {
+            'weight': 'weight',
+            'date': 'created_at',
+            'city': 'origin_city'
+        }
+
+        sort_by_column = columns[sort_by]
+        sort_direction = 'DESC' if direction == "d" else 'ASC'
+
+        try:
+            self.cursor.execute(
+                f"""
+                SELECT tracking_number, origin_city, destination_city, weight, current_status, created_at
+                FROM shipments
+                ORDER BY {sort_by_column} {sort_direction};
+                """,
+            )
+
+            return self.cursor.fetchall()
+        except sqlite3.Error:
+            print("SQLite error(err code:19): Problem with SELECT function")
+            return None
+
+    def search_by_name_or_town(self, search_term):
+        try:
+            search_pattern = f"%{search_term}%"
+            self.cursor.execute(
+                """
+                SELECT tracking_number, sender_name, origin_city, destination_city, weight, current_status
+                FROM shipments 
+                WHERE sender_name 
+                    LIKE ? 
+                   OR origin_city 
+                    LIKE ? 
+                """,
+                (search_pattern, search_pattern)
+            )
+
+            return self.cursor.fetchall()
+        except sqlite3.Error:
+            print("SQLite error(err code:18): Problem with SELECT function")
+            return None
+
+    def average_weight(self):
+        try:
+            self.cursor.execute("SELECT AVG(weight) FROM shipments;")
+
+            avg_weight = self.cursor.fetchone()[0]
+
+            if not avg_weight:
+                return 0
+
+            return avg_weight
+        except sqlite3.Error:
+            print("SQLite error(err code:17): Problem with SELECT function")
+            return None
+
+    def sum_total_weight(self):
+        try:
+            self.cursor.execute("SELECT SUM(weight) FROM shipments;")
+
+            total_weight = self.cursor.fetchone()[0]
+
+            if not total_weight:
+                return 0
+
+            return total_weight
+
+        except sqlite3.Error:
+            print("SQLite error(err code:17): Problem with SELECT function")
+            return None
+
+    def count_deliveries(self, status):
+        try:
+            if status:
+                self.cursor.execute(
+                    f"""
+                SELECT COUNT(*) FROM shipments WHERE current_status = ?;
+                """,
+                    (status,)
+                )
+            else:
+                self.cursor.execute("SELECT COUNT(*) FROM shipments;")
+
+            count = self.cursor.fetchone()[0]
+            return count
+        except sqlite3.Error:
+            print("SQLite error(err code:16): Problem with SELECT function")
+            return None
+
+    def edit_delivery_field(self, tracking_number, field, new_value):
+        allowed_field = {
+            "sender_name": "sender_name",
+            "recipient_name": "recipient_name",
+            "origin_city": "origin_city",
+            "destination_city": "destination_city",
+            "weight": "weight"
+        }
+
+        column = allowed_field[field]
+
+        try:
+            self.cursor.execute(
+                f"""
+                UPDATE shipments SET {column} = ? WHERE tracking_number = ?;
+                """,
+                (new_value, tracking_number)
+            )
+
+            if self.cursor.rowcount == 0:
+                print(f"There's no delivery with the tracking number {tracking_number}.")
+                return False
+        except sqlite3.Error:
+            print("SQLite error(err code:20): Problem with UPDATE function")
+            return False
+        
+        return self.commit()
