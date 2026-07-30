@@ -316,9 +316,9 @@ class DB:
                 SELECT tracking_number, sender_name, origin_city, destination_city, weight, current_status
                 FROM shipments 
                 WHERE sender_name 
-                    LIKE ? 
+                    LIKE ? COLLATE NOCASE
                    OR origin_city 
-                    LIKE ? 
+                    LIKE ? COLLATE NOCASE
                 """,
                 (search_pattern, search_pattern)
             )
@@ -395,10 +395,15 @@ class DB:
             )
 
             if self.cursor.rowcount == 0:
+                logger.warning(f"Edit failed: Tracking number {tracking_number} not found")
                 return None
 
         except sqlite3.Error:
             print("SQLite error(err code:20): Problem with UPDATE function")
+            logger.error(f"Edit failed for tracking_number={tracking_number}, field={field}")
             return False
-        
-        return self.commit()
+
+        result = self.commit()
+        if result:
+            logger.info(f"Shipment edited: {tracking_number} -> {field} changed to '{new_value}'")
+        return result
