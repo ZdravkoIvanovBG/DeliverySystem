@@ -64,7 +64,7 @@ def show_all_delivers():
 
 
 def search_by_tracking_number_menu():
-    tracking_number = input("Enter tracking number: ")
+    tracking_number = input("Enter tracking number: ").strip()
     search_by_tracking_number(db, tracking_number)
 
 
@@ -90,34 +90,19 @@ def _choose_status():  # ново: помощна функция за филтъ
             pass
 
 def change_status_menu():
-    tracking_number = input("Enter tracking number: ")
+    tracking_number = input("Enter tracking number: ").strip()
 
-    print(colors.title("Choose new status:"))  # поправено: избор от списък, не свободен текст
-    for i, status in enumerate(Shipment.ALLOWED_STATUSES, start=1):
-        print(colors.menu_item(i, status))
-
-    choice = input(colors.info("Enter number: "))
-
-    try:
-        index = int(choice) - 1
-
-        if index < 0:
-            raise IndexError
-
-        new_status = Shipment.ALLOWED_STATUSES[index]
-    except (ValueError, IndexError):
-        print(colors.error("Invalid choice."))
-        return
+    new_status = _choose_status()
 
     change_status(db, tracking_number, new_status)
 
 def show_history_menu():
-    tracking_number = input("Enter tracking number: ")
+    tracking_number = input("Enter tracking number: ").strip()
     show_history(db, tracking_number)
 
 
 def delete_package_menu():
-    tracking_number = input("Enter tracking number: ")
+    tracking_number = input("Enter tracking number: ").strip()
     delete_package(db, tracking_number)
 
 
@@ -200,7 +185,7 @@ def count_deliveries_menu():
     count_deliveries(db, status)
 
 def edit_delivery_menu():
-    tracking_number = input("Enter tracking number: ")
+    tracking_number = input("Enter tracking number: ").strip()
 
     allowed_field = ["sender", "recipient", "origin city", "destination city", "weight"]
 
@@ -213,13 +198,13 @@ def edit_delivery_menu():
         print(colors.error("Invalid field. Please choose from the available options."))
 
     while True:
-        new_value = input(f"Enter new value for {field}: ")
+        new_value = get_valid_text(f"Enter new value for {field}: ")
 
         if field == "weight":
             try:
                 new_value = float(new_value)
 
-                if new_value < 0:
+                if new_value <= 0:
                     raise ValueError
 
                 break
