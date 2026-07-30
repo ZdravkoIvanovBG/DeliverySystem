@@ -131,9 +131,14 @@ def change_status(db, tracking_number, new_status):
         print(colors.error("Невалиден статус. Изберете от предварително зададения списък."))
         return False
 
-    db.update_state(tracking_number, new_status)
-    return True
+    result = db.update_state(tracking_number, new_status)
 
+    if not result:
+        print(colors.warning("There's no delivery with the given tracking number"))
+        return False
+
+    print(colors.success("The status was changed successfully!"))
+    return True
 
 def show_history(db, tracking_number):
     shipment = db.print_status_history(tracking_number)
