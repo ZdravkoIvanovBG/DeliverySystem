@@ -11,18 +11,49 @@ import colors  # добавено
 db = DB()
 
 
-def add_package_menu():
-    tracking_number = input("Enter tracking number: ")
-    sender_name = input("Enter sender name: ")
-    recipient_name = input("Enter recipient name: ")
-    origin_city = input("Enter origin city: ")
-    destination_city = input("Enter destination city: ")
+def get_valid_text(message):
+    while True:
+        user_input = input(message).strip()
 
-    try:
-        weight = float(input("Enter weight: "))
-    except ValueError:  # поправено: вече не гърми при текст
-        print(colors.error("Please, enter a valid weight."))
-        return
+        # 1. Check for empty string
+        if not user_input:
+            print(colors.warning("Error: Input cannot be empty. Please try again."))
+            continue
+
+        # 2. Check if the input is a number (positive, negative, or decimal)
+        try:
+            float(user_input)
+            # If the above line succeeds, it means they entered a pure number
+            print(colors.warning("Error: Input cannot be just a number. Please enter valid text."))
+            continue
+        except ValueError:
+            pass
+
+        has_valid_chars = all(char.isalnum() or char.isspace() or char == '-' for char in user_input)
+
+        if not has_valid_chars:
+            print(colors.warning("Error: Input cannot contain special symbols like %, ^, &, etc. Please try again."))
+            continue
+
+        return user_input
+
+def add_package_menu():
+    tracking_number = get_valid_text("Enter tracking number: ")
+    sender_name = get_valid_text("Enter sender name: ")
+    recipient_name = get_valid_text("Enter recipient name: ")
+    origin_city = get_valid_text("Enter origin city: ")
+    destination_city = get_valid_text("Enter destination city: ")
+
+    while True:
+        try:
+            weight = float(input("Enter weight: "))
+
+            if weight <= 0:
+                raise ValueError
+
+            break
+        except ValueError:  # поправено: вече не гърми при текст
+            print(colors.error("Please, enter a valid weight."))
 
     add_delivery(db, tracking_number, sender_name, recipient_name, origin_city, destination_city, weight)
 
