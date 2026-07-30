@@ -53,7 +53,7 @@ def add_package_menu():
 
             break
         except ValueError:  # поправено: вече не гърми при текст
-            print(colors.error("Please, enter a valid weight."))
+            print(colors.warning("Please, enter a valid weight."))
 
     add_delivery(db, tracking_number, sender_name, recipient_name, origin_city, destination_city, weight)
 
