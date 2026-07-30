@@ -407,3 +407,17 @@ class DB:
         if result:
             logger.info(f"Shipment edited: {tracking_number} -> {field} changed to '{new_value}'")
         return result
+
+    def get_status_by_tracking_number(self, tracking_number):
+        try:
+            self.cursor.execute(
+                """
+                SELECT current_status FROM shipments WHERE tracking_number = ?;
+                """,
+                (tracking_number,)
+            )
+        except sqlite3.Error:
+            print("SQLite error(err code:21): Problem with SELECT function")
+            return None
+
+        return self.cursor.fetchone()[0]

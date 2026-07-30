@@ -131,6 +131,16 @@ def change_status(db, tracking_number, new_status):
         print(colors.error("Invalid choice, please enter the one from the list"))
         return False
 
+    current_status = db.get_status_by_tracking_number(tracking_number)
+
+    if not current_status:
+        print(colors.error("There's no delivery with the given tracking number"))
+        return False
+    else:
+        if current_status == new_status:
+            print(colors.error("The status is already the same as the one you entered"))
+            return False
+
     result = db.update_state(tracking_number, new_status)
 
     if not result:
