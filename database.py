@@ -378,10 +378,10 @@ class DB:
 
     def edit_delivery_field(self, tracking_number, field, new_value):
         allowed_field = {
-            "sender_name": "sender_name",
-            "recipient_name": "recipient_name",
-            "origin_city": "origin_city",
-            "destination_city": "destination_city",
+            "sender": "sender_name",
+            "recipient": "recipient_name",
+            "origin city": "origin_city",
+            "destination city": "destination_city",
             "weight": "weight"
         }
 
@@ -396,8 +396,7 @@ class DB:
             )
 
             if self.cursor.rowcount == 0:
-                print(f"There's no delivery with the tracking number {tracking_number}.")
-                return False
+                return None
         except sqlite3.Error:
             print("SQLite error(err code:20): Problem with UPDATE function")
             return False

@@ -2,7 +2,8 @@ from database import DB
 from shipments import (
     add_delivery, show_all_deliveries, search_by_tracking_number, change_status, show_history,
     delete_package, filter_shipments, Shipment, order_deliveries,
-    search_by_name_or_town, average_weight, sum_total_weight, count_deliveries  # filter_shipments, Shipment - добавени
+    search_by_name_or_town, average_weight, sum_total_weight, count_deliveries,
+    edit_delivery  # filter_shipments, Shipment - добавени
 )
 from workers import process_undelivered_shipments, process_undelivered_shipments_with_threads  # вторият - нов
 import colors  # добавено
@@ -160,6 +161,37 @@ def count_deliveries_menu():
 
     count_deliveries(db, status)
 
+def edit_delivery_menu():
+    tracking_number = input("Enter tracking number: ")
+
+    allowed_field = ["sender", "recipient", "origin city", "destination city", "weight"]
+
+    while True:
+        field = input("Enter field to edit (sender, recipient, origin city, destination city, weight): ").lower().strip()
+
+        if field in allowed_field:
+            break
+
+        print(colors.error("Invalid field. Please choose from the available options."))
+
+    while True:
+        new_value = input(f"Enter new value for {field}: ")
+
+        if field == "weight":
+            try:
+                new_value = float(new_value)
+                break
+            except ValueError:
+                print(colors.error("Invalid weight value. Please enter a valid number."))
+                continue
+
+        if new_value.strip() == "":
+            print(colors.error("Value cannot be empty."))
+        else:
+            break
+
+    edit_delivery(db, tracking_number, field, new_value)
+
 def main():
     is_running = True
 
@@ -179,6 +211,7 @@ def main():
         print("12. Average weight of all deliveries")
         print("13. Sum of total weight of all deliveries")
         print("14. Count Deliveries By Status(Optional)")
+        print("15. Edit delivery")
         print("0. Exit")
 
         choice = input("Choose an option: ")
@@ -212,6 +245,8 @@ def main():
                 sum_total_weight_menu()
             case "14":
                 count_deliveries_menu()
+            case "15":
+                edit_delivery_menu()
             case "0":
                 db.close_database()
                 print(colors.success("Goodbye!"))

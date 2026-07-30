@@ -194,3 +194,11 @@ def count_deliveries(db, status):
     count = db.count_deliveries(status)
 
     print(f"Number of deliveries: {count}")
+
+def edit_delivery(db, tracking_number, field, new_value):
+    success = db.edit_delivery_field(tracking_number, field, new_value)
+
+    if not success:
+        print(colors.warning("There's no delivery with the given tracking number"))
+    else:
+        print(colors.success(f"The {field} was updated successfully!"))
