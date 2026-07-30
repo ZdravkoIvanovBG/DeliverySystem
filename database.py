@@ -420,4 +420,4 @@ class DB:
             print("SQLite error(err code:21): Problem with SELECT function")
             return None
 
-        return self.cursor.fetchone()[0]
+        return self.cursor.fetchone()
