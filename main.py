@@ -21,7 +21,7 @@ def add_package_menu():
     try:
         weight = float(input("Enter weight: "))
     except ValueError:  # поправено: вече не гърми при текст
-        print(colors.error("Моля, въведете валидно число."))
+        print(colors.error("Please, enter a valid weight."))
         return
 
     add_delivery(db, tracking_number, sender_name, recipient_name, origin_city, destination_city, weight)
@@ -38,7 +38,7 @@ def search_by_tracking_number_menu():
 
 
 def _choose_status():  # ново: помощна функция за филтъра по статус
-    print(colors.title("Изберете статус:"))
+    print(colors.title("Choose status:"))
     for i, status in enumerate(Shipment.ALLOWED_STATUSES, start=1):
         print(colors.menu_item(i, status))
 
@@ -55,13 +55,13 @@ def _choose_status():  # ново: помощна функция за филтъ
 
             return Shipment.ALLOWED_STATUSES[index]
         except (ValueError, IndexError):
-            print(colors.error("Невалиден избор."))
+            print(colors.error("Invalid choice."))
             pass
 
 def change_status_menu():
     tracking_number = input("Enter tracking number: ")
 
-    print(colors.title("Изберете нов статус:"))  # поправено: избор от списък, не свободен текст
+    print(colors.title("Choose new status:"))  # поправено: избор от списък, не свободен текст
     for i, status in enumerate(Shipment.ALLOWED_STATUSES, start=1):
         print(colors.menu_item(i, status))
 
@@ -75,7 +75,7 @@ def change_status_menu():
 
         new_status = Shipment.ALLOWED_STATUSES[index]
     except (ValueError, IndexError):
-        print(colors.error("Невалиден избор."))
+        print(colors.error("Invalid choice."))
         return
 
     change_status(db, tracking_number, new_status)
@@ -94,7 +94,7 @@ def process_multiple_undelivered_shipments_menu():
     tracking_numbers = db.get_undelivered_tracking_numbers()
 
     if len(tracking_numbers) < 3:
-        print(colors.warning("Трябва да има поне 3 недоставени пратки."))
+        print(colors.warning("There has to be at least 3 undelivered shipments to process them."))
         return
 
     results = process_undelivered_shipments(tracking_numbers)
@@ -107,7 +107,7 @@ def process_multiple_undelivered_shipments_thread_menu():  # ново
     tracking_numbers = db.get_undelivered_tracking_numbers()
 
     if len(tracking_numbers) < 3:
-        print(colors.warning("Трябва да има поне 3 недоставени пратки."))
+        print(colors.warning("There has to be at least 3 undelivered shipments to process them."))
         return
 
     results = process_undelivered_shipments_with_threads(tracking_numbers)
@@ -119,15 +119,15 @@ def process_multiple_undelivered_shipments_thread_menu():  # ново
 def filter_shipments_menu():  # ново
     status = _choose_status()
 
-    city = input("Град (Enter за пропускане): ").strip() or None
+    city = input("City (Enter за пропускане): ").strip() or None
 
-    min_weight_input = input("Минимално тегло (Enter за пропускане): ").strip()
+    min_weight_input = input("Minimum Weight (Enter за пропускане): ").strip()
     min_weight = None
     if min_weight_input:
         try:
             min_weight = float(min_weight_input)
         except ValueError:
-            print(colors.error("Невалидно тегло, филтърът по тегло се пропуска."))
+            print(colors.error("Invalid weight, skipping filtering by weight."))
 
     filter_shipments(db, status=status, city=city, min_weight=min_weight)
 
@@ -187,6 +187,10 @@ def edit_delivery_menu():
         if field == "weight":
             try:
                 new_value = float(new_value)
+
+                if new_value < 0:
+                    raise ValueError
+
                 break
             except ValueError:
                 print(colors.error("Invalid weight value. Please enter a valid number."))

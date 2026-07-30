@@ -128,7 +128,7 @@ def search_by_tracking_number(db, tracking_number):
 
 def change_status(db, tracking_number, new_status):
     if new_status not in Shipment.ALLOWED_STATUSES:  # поправено: валидация на статуса
-        print(colors.error("Невалиден статус. Изберете от предварително зададения списък."))
+        print(colors.error("Invalid choice, please enter the one from the list"))
         return False
 
     result = db.update_state(tracking_number, new_status)
@@ -188,7 +188,7 @@ def search_by_name_or_town(db, search_term):
 def average_weight(db):
     avg_weight = db.average_weight()
 
-    print(f"Average weight: {avg_weight}kg")
+    print(f"Average weight: {avg_weight:.2f} kg")
 
 def sum_total_weight(db):
     total_weight = db.sum_total_weight()

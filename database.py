@@ -162,7 +162,6 @@ class DB:
             status_history = self.cursor.fetchone()
 
             if not status_history:
-                print("No shipments found with the given tracking number.")
                 return None
 
             status_history = status_history[0]
@@ -397,6 +396,7 @@ class DB:
 
             if self.cursor.rowcount == 0:
                 return None
+
         except sqlite3.Error:
             print("SQLite error(err code:20): Problem with UPDATE function")
             return False
