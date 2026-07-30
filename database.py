@@ -95,7 +95,7 @@ class DB:
             logger.error(f"Insert failed for tracking_number={shipment.tracking_number}")  # добавено
             return False
         except sqlite3.IntegrityError:
-            print("SQLite error(err code:5): The tracking number already exists")
+            print("The tracking number already exists")
             logger.warning(f"Duplicate tracking_number={shipment.tracking_number}")  # добавено
             return False
 
