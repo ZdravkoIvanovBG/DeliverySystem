@@ -161,6 +161,7 @@ def show_history(db, tracking_number):
 
 def delete_package(db, tracking_number):
     db.delete_package(tracking_number)
+    print("The delivery is deleted successfully")
 
 
 def filter_shipments(db, status=None, city=None, min_weight=None):
