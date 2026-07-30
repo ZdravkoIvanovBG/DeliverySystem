@@ -49,6 +49,10 @@ def _choose_status():  # ново: помощна функция за филтъ
 
         try:
             index = int(choice) - 1
+
+            if index < 0:
+                raise IndexError
+
             return Shipment.ALLOWED_STATUSES[index]
         except (ValueError, IndexError):
             print(colors.error("Невалиден избор."))
@@ -65,13 +69,16 @@ def change_status_menu():
 
     try:
         index = int(choice) - 1
+
+        if index < 0:
+            raise IndexError
+
         new_status = Shipment.ALLOWED_STATUSES[index]
     except (ValueError, IndexError):
         print(colors.error("Невалиден избор."))
         return
 
     change_status(db, tracking_number, new_status)
-
 
 def show_history_menu():
     tracking_number = input("Enter tracking number: ")
